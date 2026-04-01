@@ -900,8 +900,8 @@
   </div>
 
   <script>
-    const CLIENT_ID = 'YOUR_DEMO_GOOGLE_CLIENT_ID';
-    const SHEET_ID = 'YOUR_DEMO_GOOGLE_SHEET_ID';
+    const CLIENT_ID = '719872946356-e7k2u6oaft7l4ssqjg20hsrak152o51p.apps.googleusercontent.com';
+    const SHEET_ID = '1eu6keUK9nFMrxFSmmSU0744raiotH6gD8HFPVO2DfVg';
     const SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly';
     const EUR_TO_USD = 1.08;
 
