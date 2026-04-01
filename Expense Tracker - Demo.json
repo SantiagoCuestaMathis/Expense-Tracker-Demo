@@ -1,0 +1,278 @@
+{
+  "name": "Expense Tracker - Demo",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        144,
+        208
+      ],
+      "id": "63f1e025-f333-48de-9570-9a56c353b088",
+      "name": "Anthropic Chat Model"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyHour"
+            }
+          ]
+        },
+        "filters": {
+          "sender": "Notification@bank.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0eff8f81-983e-455a-b0b2-4ba52d59d974",
+      "name": "Bank Email Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extract expense details from this bank notification email and return ONLY raw JSON with no markdown, no code blocks:\n\n{\n  \"merchant\": \"company or ATM name\",\n  \"amount\": 00.00,\n  \"currency\": \"USD\",\n  \"type\": \"debit or credit\",\n  \"fixed_variable\": \"Fixed or Variable\",\n  \"category\": \"Food/Transport/Dining Out/Subscription/Shopping/Health/Utilities/Entertainment/Education/Travel/ATM Withdrawal/Other\",\n  \"description\": \"one line summary\"\n}\n\nRules:\n- If email mentions ATM or cash withdrawal → category is \"ATM Withdrawal\", merchant is \"ATM + location code\"\n- If email mentions CONSUMO INTERNACIONAL/INTERNET → it's an online/card purchase\n- Fixed = same amount every month (subscriptions, rent, loans, phone, internet, gym)\n- Variable = changes each transaction (groceries, restaurants, uber, shopping, ATM)\n- Subscriptions should ALWAYS be Fixed\n- Return ONLY the JSON object, no other text\n\nEmail content:\n{{ $('Bank Email Trigger').item.json.snippet }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        208,
+        0
+      ],
+      "id": "36b7c5ce-13a8-4dd2-8644-9466fab3fe11",
+      "name": "Extract Expense Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.item.json.text;\nconst clean = raw.replace(/```json\\n?|\\n?```/g, '').trim();\n\nlet data;\ntry {\n  data = JSON.parse(clean);\n} catch(e) {\n  data = { fixed_variable: 'Variable', category: 'Other' };\n}\n\nconst rawDate = $('Bank Email Trigger').item.json.internalDate;\nconst date = new Date(parseInt(rawDate)).toISOString().split('T')[0];\n\nconst amount = parseFloat(data.amount) || 0;\nconst currency = data.currency || 'USD';\nconst amountUSD = currency === 'EUR' ? amount * 1.08 : amount;\n\nreturn [{\n  json: {\n    bank: 'Bank A',\n    date: date,\n    merchant: data.merchant,\n    amount: amount,\n    currency: currency,\n    debit_credit: data.type,\n    fixed_variable: data.fixed_variable,\n    category: data.category,\n    description: data.description,\n    amount_usd: amountUSD\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        0
+      ],
+      "id": "c29b7e31-7461-4264-830d-c1f6f8fb457d",
+      "name": "Normalize Expense Record"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "152EeJeErEGOKBBHjCndV9U0ChMe1Q42TXsh8024COdo",
+          "mode": "list",
+          "cachedResultName": "Expense Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/152EeJeErEGOKBBHjCndV9U0ChMe1Q42TXsh8024COdo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Transactions ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/152EeJeErEGOKBBHjCndV9U0ChMe1Q42TXsh8024COdo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $json.date }}",
+            "Bank ": "={{ $json.bank }}",
+            "Amount": "={{ $json.amount }}",
+            "Currency": "={{ $json.currency }}",
+            "Debit/Credit": "={{ $json.debit_credit }}",
+            "Fixed/Variable": "={{ $json.fixed_variable }}",
+            "Description": "={{ $json.description }}",
+            "Category": "={{ $json.category }}",
+            "Amount USD": "={{ $json.amount_usd }}",
+            "Merchant": "={{ $json.merchant }}"
+          },
+          "matchingColumns": [
+            "Date"
+          ],
+          "schema": [
+            {
+              "id": "Bank ",
+              "displayName": "Bank ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Merchant",
+              "displayName": "Merchant",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Amount",
+              "displayName": "Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Debit/Credit",
+              "displayName": "Debit/Credit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fixed/Variable",
+              "displayName": "Fixed/Variable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount USD",
+              "displayName": "Amount USD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        736,
+        0
+      ],
+      "id": "2d90cd25-297b-4d0b-a29c-02f5861d660b",
+      "name": "Append to Sheet"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract Expense Data",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bank Email Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Expense Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Expense Data": {
+      "main": [
+        [
+          {
+            "node": "Normalize Expense Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Expense Record": {
+      "main": [
+        [
+          {
+            "node": "Append to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "1d510995-115f-48a3-91a3-297226fe332c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8253a9da088451f1087c43acd5fb882e1d247eb9ad051c76014e52fffc583517"
+  },
+  "id": "TKVDONYFMTQtdSzC",
+  "tags": []
+}
