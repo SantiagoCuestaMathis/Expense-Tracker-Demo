@@ -1,0 +1,342 @@
+{
+  "name": "Telegram Expense Bot demo",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "9f9d5ea9-f47e-4150-8cda-72261adaaee6",
+      "name": "Telegram Trigger",
+      "webhookId": "5bef59cb-2c21-4a2d-9bc3-cc95a5928a6e"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extract transaction details from this message and return ONLY raw JSON:\n\n{\n  \"merchant\": \"merchant, sender or description\",\n  \"amount\": 00.00,\n  \"currency\": \"USD or EUR\",\n  \"debit_credit\": \"debit or credit\",\n  \"bank\": \"bank name if mentioned, otherwise Manual\",\n  \"category\": \"Transport/Dining Out/Subscription/Shopping/Health/Entertainment/Investing/Crypto Investing/Income/Other\",\n  \"fixed_variable\": \"Fixed or Variable\",\n  \"date\": \"YYYY-MM-DD format\",\n  \"description\": \"one line summary\"\n}\n\nRules:\n- If message says received/salary/income/transfer received → debit_credit is \"credit\", category is \"Income\"\n- If message says spent/paid/bought/purchase → debit_credit is \"debit\"\n- If no currency mentioned assume USD\n- If euros/EUR mentioned use EUR\n- Amount should be a number only, no symbols\n- Bank name: use exactly what's mentioned, if nothing mentioned use \"Manual\"\n- - Today is {{ $now.format('yyyy-MM-dd') }}. Calculate relative dates like \"yesterday\", \"last Friday\", \"last Monday\" based on today's date. If no date mentioned use today.\n- If message is not a transaction reply with {\"error\": \"not a transaction\"}\n- If message mentions Robo portfolio, investment account, or portfolio contribution → category is \"Investing\"\n- If message mentions crypto, bitcoin, ethereum, binance, or other crypto purchases → category is \"Crypto Investing\"\n- Investment contributions can still be debit transactions even if they are not normal expenses\n- Incoming transfers received should be \"credit\"\n\nMessage: {{ $json.message.text }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "51aa1f54-9e15-449f-990a-0e86d318bd12",
+      "name": "Extract Transaction Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.item.json.text;\nconst clean = raw.replace(/```json\\n?|\\n?```/g, '').trim();\n\nlet data;\ntry {\n  data = JSON.parse(clean);\n} catch(e) {\n  data = { error: 'parse error' };\n}\n\nif (data.error) {\n  return { json: { error: true, message: \"I couldn't understand that as a transaction. Try: 'spent 15 on uber' or 'received 500 salary'\" }};\n}\n\nconst today = new Date().toISOString().split('T')[0];\nconst date = data.date || today;\nconst amount = parseFloat(data.amount) || 0;\nconst currency = data.currency || 'USD';\nconst amountUSD = currency === 'EUR' ? amount * 1.08 : amount;\nconst type = data.debit_credit === 'credit' ? '💰 Income' : '💸 Expense';\n\nreturn {\n  json: {\n    error: false,\n    bank: data.bank || 'Manual',\n    date: date,\n    merchant: data.merchant,\n    amount: amount,\n    currency: currency,\n    debit_credit: data.debit_credit || 'debit',\n    fixed_variable: data.fixed_variable,\n    category: data.category,\n    description: data.description,\n    amount_usd: amountUSD,\n    reply: `✅ Logged!\\n${type}: ${data.merchant || 'Unknown'}\\n💵 ${currency} ${amount}\\n📂 ${data.category || 'Other'}\\n🏦 ${data.bank || 'Manual'}\\n📅 ${date}`\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        -96
+      ],
+      "id": "5b51839b-c53c-417f-9526-ac02c0fb169d",
+      "name": "Normalize Transaction Record"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7451b789-737d-4891-b6a8-b7e4bdb990e5",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        800,
+        -96
+      ],
+      "id": "f59fbbd1-b470-4944-b6b8-b63921b2fa78",
+      "name": "Valid Transaction?"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "152EeJeErEGOKBBHjCndV9U0ChMe1Q42TXsh8024COdo",
+          "mode": "list",
+          "cachedResultName": "Expense Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/152EeJeErEGOKBBHjCndV9U0ChMe1Q42TXsh8024COdo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Transactions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/152EeJeErEGOKBBHjCndV9U0ChMe1Q42TXsh8024COdo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $json.date }}",
+            "Bank ": "={{ $json.bank }}",
+            "Merchant": "={{ $json.merchant }}",
+            "Amount": "={{ $json.amount }}",
+            "Currency": "={{ $json.currency }}",
+            "Debit/Credit": "={{ $json.debit_credit }}",
+            "Fixed/Variable": "={{ $json.fixed_variable }}",
+            "Category": "={{ $json.category }}",
+            "Description": "={{ $json.description }}",
+            "Amount USD": "={{ $json.amount_usd }}"
+          },
+          "matchingColumns": [
+            "Date"
+          ],
+          "schema": [
+            {
+              "id": "Bank ",
+              "displayName": "Bank ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Merchant",
+              "displayName": "Merchant",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount",
+              "displayName": "Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Debit/Credit",
+              "displayName": "Debit/Credit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fixed/Variable",
+              "displayName": "Fixed/Variable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount USD",
+              "displayName": "Amount USD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1024,
+        -96
+      ],
+      "id": "180f9235-9ee4-41e1-885a-81508398e857",
+      "name": "Append to Sheet"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        296,
+        128
+      ],
+      "id": "d45138dc-0544-46ed-b728-e329195c9c5d",
+      "name": "AI Transaction Extractor"
+    },
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1248,
+        -96
+      ],
+      "id": "bf8516a6-7ae6-4dea-84f8-625ea7667822",
+      "name": "Send a text message",
+      "webhookId": "2576fa3e-534c-42c1-839a-2df90a8b4c7b"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Transaction Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Transaction Data": {
+      "main": [
+        [
+          {
+            "node": "Normalize Transaction Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Transaction Record": {
+      "main": [
+        [
+          {
+            "node": "Valid Transaction?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid Transaction?": {
+      "main": [
+        [
+          {
+            "node": "Append to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Transaction Extractor": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract Transaction Data",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "dd042f0e-8c15-4436-a720-1a1d7c9fb324",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8253a9da088451f1087c43acd5fb882e1d247eb9ad051c76014e52fffc583517"
+  },
+  "id": "TkXGlpTR12BH6yYv",
+  "tags": []
+}
