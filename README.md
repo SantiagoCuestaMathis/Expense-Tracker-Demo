@@ -2,9 +2,9 @@
 
 A local-first automation system that consolidates financial transactions from multiple sources into a single operational dashboard.
 
-Built using workflow automation and API integrations, this system demonstrates practical implementation of event-driven data pipelines, responsible handling of sensitive information, and lightweight deployment using free-tier infrastructure.
+Built using workflow automation and API integrations, this project demonstrates practical implementation of event-driven data pipelines, structured financial data processing, and lightweight deployment using accessible infrastructure.
 
-This repository contains a demonstration version of the system using anonymized sample data.
+This repository contains a demonstration version of the system using anonymized workflows, generic templates, and visual demo assets.
 
 ---
 
@@ -12,9 +12,9 @@ This repository contains a demonstration version of the system using anonymized 
 
 Managing expenses across multiple financial accounts often results in fragmented visibility into spending and cash flow. Transactions are distributed across emails, payment platforms, and messaging systems, creating operational friction and increasing the risk of manual errors.
 
-This system addresses that problem by automating transaction ingestion, standardizing data processing, and presenting consolidated financial insights through a responsive web dashboard.
+This system addresses that problem by automating transaction ingestion, standardizing data processing, and presenting consolidated financial insights through a responsive dashboard.
 
-The project demonstrates the ability to design and implement production-style automation workflows using accessible tools while maintaining responsible data handling practices.
+The project demonstrates the ability to design and implement production-style automation workflows using low-cost tools while maintaining responsible handling of sensitive information.
 
 ---
 
@@ -35,7 +35,7 @@ These issues create inefficiencies in financial tracking and increase the likeli
 This system implements an automated workflow architecture that:
 
 - Captures transaction notifications from email and messaging platforms
-- Standardizes and stores transaction data in a structured database
+- Standardizes and stores transaction data in a structured format
 - Aggregates financial metrics automatically
 - Presents actionable insights through a mobile-friendly dashboard
 
@@ -45,18 +45,13 @@ The design prioritizes reliability, simplicity, and responsible handling of sens
 
 ## System Architecture
 
-User Inputs  
-├── Gmail Transaction Notifications  
-└── Telegram Expense Entries  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼  
-n8n Workflow Automation (Docker)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼  
-Google Sheets Database  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼  
-Web Dashboard (Netlify)
+Input sources feed into workflow automation, which processes and stores structured transaction data for dashboard visualization.
+
+- Gmail transaction notifications
+- Telegram expense entries
+- n8n workflow automation
+- Google Sheets data layer
+- Web dashboard interface
 
 ---
 
@@ -66,7 +61,7 @@ Web Dashboard (Netlify)
 
 - Automated expense ingestion from email notifications
 - Manual expense logging via Telegram bot
-- Structured data normalization
+- Structured transaction normalization
 - Event-driven workflow execution
 
 ### Analytics and Reporting
@@ -79,9 +74,9 @@ Web Dashboard (Netlify)
 ### User Experience
 
 - Mobile-responsive interface
-- Real-time dashboard updates
 - Search and filtering capabilities
-- Light and dark mode support
+- Summary dashboard views
+- Multi-tab navigation for overview, budgets, and transactions
 
 ---
 
@@ -100,15 +95,15 @@ Web Dashboard (Netlify)
 - Google Sheets API
 - Anthropic API
 
-### Presentation Layer
+### Front End
 
 - HTML
 - CSS
 - JavaScript
 
-### Deployment
+### Hosting
 
-- Netlify
+- Netlify for demo deployment when needed
 
 ---
 
@@ -120,202 +115,97 @@ Key characteristics:
 
 - Automation workflows run locally
 - Data remains under user control
-- Infrastructure operates without paid cloud services
-- System availability depends on local runtime
+- Credentials are user-provided and not stored in this repository
+- Infrastructure can be demonstrated without maintaining a permanent live deployment
 
-This deployment model demonstrates a practical balance between accessibility and responsible data governance.
+This approach provides a practical balance between accessibility, reproducibility, and responsible data governance.
 
 ---
 
 ## Responsible Data Handling
 
-Financial information is inherently sensitive. This system was intentionally designed to minimize unnecessary exposure of personal financial data.
+Financial information is inherently sensitive. This project was intentionally structured to minimize unnecessary exposure of personal financial data.
 
 Design principles applied:
 
 - Local execution of automation workflows
 - Controlled external integrations
-- Minimal data persistence outside the user environment
-- Separation between production data and demonstration environments
+- Separation between private usage and public demonstration assets
+- No private credentials included in the repository
+- Public-facing assets use anonymized or generic demo representations
 
-All data included in this repository is anonymized and used solely for demonstration purposes.
-
----
-
-## Demonstration Scope
-
-The dashboard displays:
-
-- Monthly income
-- Monthly expenses
-- Savings performance
-- Remaining balance
-- Category spending distribution
-- Transaction history
-- Budget tracking indicators
-
-The demonstration environment uses simulated data and does not connect to live financial systems.
+All data and workflow exports included here are intended solely for demonstration purposes.
 
 ---
 
-## How to Run This Demo
+## Demo Assets
 
-This repository includes a public demonstration version of the system. You can either view the deployed dashboard directly or reproduce the automation workflow locally using your own credentials.
+This repository is designed to be reviewed through its code, workflow exports, README, and visual demo assets.
 
-### Option 1 — View the Live Demo
+Recommended review path:
 
-Open the live dashboard:
+1. Read this README for architecture and implementation context
+2. Review the workflow files in the `workflows/` folder
+3. Open the dashboard HTML template
+4. View screenshots or screen recordings associated with the project
 
-`https://expense-tracker-demo-data.netlify.app`
-
-No installation is required.
-
-This option is intended for quickly reviewing the interface, reporting logic, and overall system design using anonymized data.
-
-### Option 2 — Run the Workflow Locally
-
-This option reproduces the event-driven automation pipeline locally.
-
-#### Prerequisites
-
-- Docker installed
-- n8n available locally
-- A Google account for Google Sheets integration
-- A Telegram account and bot token if you want to test the Telegram workflow
-- A Gmail account if you want to test the email workflow
-- An Anthropic API key if you want to use the AI extraction nodes
-
-#### Step 1 — Start n8n
-
-Run the following command:
-
-    docker run -it --rm \
-    -p 5678:5678 \
-    -v ~/.n8n:/home/node/.n8n \
-    n8nio/n8n
-
-Then open:
-
-`http://localhost:5678`
-
-#### Step 2 — Import the Workflows
-
-Inside n8n:
-
-1. Click **Import**
-2. Select the workflow files in the `workflows/` folder
-
-Included workflow files:
-
-- `expense-tracker-demo.json`
-- `telegram-expense-bot-demo.json`
-
-#### Step 3 — Configure Credentials
-
-Create and assign your own credentials for the services you want to test:
-
-- Gmail
-- Telegram
-- Google Sheets
-- Anthropic
-
-Important:
-
-This repository does **not** include credentials. To run the workflows locally, each user must connect their own accounts and services.
-
-#### Step 4 — Activate the Workflows
-
-After credentials are configured, activate the relevant workflows inside n8n.
-
-The system will then begin processing incoming events according to the selected workflow.
-
-#### Step 5 — View the Dashboard
-
-You can view the dashboard in either of two ways:
-
-- Open the deployed version at `https://expense-tracker-demo-data.netlify.app`
-- Open the local dashboard HTML file if you are running it locally
-
-Depending on your setup, you may use the included HTML dashboard file directly or deploy your own copy to Netlify.
+A live deployment may not always be active. The project is intended to demonstrate implementation quality, workflow design, and reproducibility rather than serve as a permanent public production system.
 
 ---
 
-## Architecture Overview
+## How to Reproduce Locally
 
-The system follows a simple event-driven pipeline:
+This repository includes generic templates and exported workflows. To run the system locally, a user must connect their own credentials.
 
-User Event  
-├── Gmail Notification  
-└── Telegram Message  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼  
-n8n Workflow Automation  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼  
-Data Processing  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼  
-Google Sheets Database  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼  
-Web Dashboard
+### Requirements
 
----
+- Docker
+- n8n
+- Google account
+- Telegram account and bot setup if using the Telegram workflow
+- Anthropic API key if using AI extraction nodes
 
-## Layered Architecture
+### Local Setup Overview
 
-### Input Layer
+1. Start n8n locally
+2. Import the workflow files from the `workflows/` folder
+3. Create and attach your own credentials for Gmail, Telegram, Google Sheets, and Anthropic where applicable
+4. Configure the dashboard template for your own environment if needed
+5. Activate the workflows locally
 
-- Gmail Notification
-- Telegram Message
-
-### Processing Layer
-
-- n8n Workflow Engine
-- Event Detection
-- Data Extraction
-- Data Normalization
-- Validation
-
-### Storage Layer
-
-- Google Sheets Database
-
-### Presentation Layer
-
-- Web Dashboard
-- Netlify Deployment
+This repository does not include any private credentials, access tokens, or production data connections.
 
 ---
 
 ## Project Structure
 
-    personal-finance-automation-demo/
-    ├── dashboard/
-    │   └── index.html
+    Expense-Tracker-Demo/
     ├── workflows/
     │   ├── expense-tracker-demo.json
     │   └── telegram-expense-bot-demo.json
-    ├── screenshots/
-    │   ├── dashboard.png
-    │   └── workflow.png
     ├── .env.example
     ├── .gitignore
     ├── LICENSE
-    └── README.md
+    ├── README.md
+    └── my-finance-demo.html
+
+If screenshots or recordings are added later, they can be organized in optional folders such as:
+
+    screenshots/
+    media/
 
 ---
 
 ## Workflow Logic
 
-1. A financial transaction notification is received
-2. The automation workflow detects the event
-3. Transaction data is extracted and standardized
-4. Data is appended to the centralized database
-5. Aggregated metrics are recalculated
-6. The dashboard updates to reflect current financial status
+1. A financial transaction event is received through email or Telegram
+2. The workflow detects and parses the input
+3. Transaction data is extracted and normalized
+4. Structured data is appended to the storage layer
+5. Aggregated financial views are refreshed
+6. The dashboard reflects the updated financial state
 
-This workflow demonstrates a practical implementation of event-driven automation using low-cost infrastructure.
+This demonstrates a practical implementation of event-driven automation using lightweight infrastructure.
 
 ---
 
@@ -326,48 +216,39 @@ This workflow demonstrates a practical implementation of event-driven automation
 - Workflow design and orchestration
 - Event-driven processing
 - API integration
+- Multi-step automation logic
 
 ### Data Engineering
 
 - Structured data normalization
 - Automated aggregation logic
-- Lightweight database management
+- Lightweight storage architecture
 
 ### System Design
 
 - Modular architecture
 - Local-first deployment strategy
-- Responsible data handling
+- Separation between private and public environments
+- Responsible handling of sensitive data
 
-### Software Delivery
+### Front-End Delivery
 
-- Front-end dashboard development
-- Deployment configuration
-- Operational reliability
-
----
-
-## System Design Characteristics
-
-- Event-driven architecture
-- Local-first execution model
-- Stateless workflow processing
-- Lightweight storage layer
-- Serverless dashboard hosting
-- Free-tier infrastructure compatibility
+- Dashboard interface design
+- Responsive layout implementation
+- Data presentation and filtering logic
 
 ---
 
 ## Future Enhancements
 
-Planned improvements include:
+Potential future improvements include:
 
 - Automated budget alerts
 - Recurring expense detection
 - Predictive spending analysis
 - Multi-currency support
-- Automated reporting exports
-- Notification-based financial insights
+- Exportable reports
+- More advanced portfolio and investment tracking
 
 ---
 
