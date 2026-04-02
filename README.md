@@ -46,21 +46,17 @@ The design prioritizes reliability, simplicity, and responsible handling of sens
 ## System Architecture
 
 User Inputs  
-│  
 ├── Gmail Transaction Notifications  
-├── Telegram Expense Entries  
-│  
-▼  
-
+└── Telegram Expense Entries  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼  
 n8n Workflow Automation (Docker)  
-
-▼  
-
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼  
 Google Sheets Database  
-
-▼  
-
-Web Dashboard (Netlify)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼  
+Web Dashboard (Netlify)
 
 ---
 
@@ -93,25 +89,26 @@ Web Dashboard (Netlify)
 
 ### Automation Layer
 
-- n8n  
-- Docker  
-- ngrok  
+- n8n
+- Docker
+- ngrok
 
 ### Integration Layer
 
-- Gmail API  
-- Telegram Bot API  
-- Google Sheets API  
+- Gmail API
+- Telegram Bot API
+- Google Sheets API
+- Anthropic API
 
 ### Presentation Layer
 
-- HTML  
-- CSS  
-- JavaScript  
+- HTML
+- CSS
+- JavaScript
 
 ### Deployment
 
-- Netlify  
+- Netlify
 
 ---
 
@@ -161,22 +158,151 @@ The demonstration environment uses simulated data and does not connect to live f
 
 ---
 
+## How to Run This Demo
+
+This repository includes a public demonstration version of the system. You can either view the deployed dashboard directly or reproduce the automation workflow locally using your own credentials.
+
+### Option 1 — View the Live Demo
+
+Open the live dashboard:
+
+`https://expense-tracker-demo-data.netlify.app`
+
+No installation is required.
+
+This option is intended for quickly reviewing the interface, reporting logic, and overall system design using anonymized data.
+
+### Option 2 — Run the Workflow Locally
+
+This option reproduces the event-driven automation pipeline locally.
+
+#### Prerequisites
+
+- Docker installed
+- n8n available locally
+- A Google account for Google Sheets integration
+- A Telegram account and bot token if you want to test the Telegram workflow
+- A Gmail account if you want to test the email workflow
+- An Anthropic API key if you want to use the AI extraction nodes
+
+#### Step 1 — Start n8n
+
+Run the following command:
+
+    docker run -it --rm \
+    -p 5678:5678 \
+    -v ~/.n8n:/home/node/.n8n \
+    n8nio/n8n
+
+Then open:
+
+`http://localhost:5678`
+
+#### Step 2 — Import the Workflows
+
+Inside n8n:
+
+1. Click **Import**
+2. Select the workflow files in the `workflows/` folder
+
+Included workflow files:
+
+- `expense-tracker-demo.json`
+- `telegram-expense-bot-demo.json`
+
+#### Step 3 — Configure Credentials
+
+Create and assign your own credentials for the services you want to test:
+
+- Gmail
+- Telegram
+- Google Sheets
+- Anthropic
+
+Important:
+
+This repository does **not** include credentials. To run the workflows locally, each user must connect their own accounts and services.
+
+#### Step 4 — Activate the Workflows
+
+After credentials are configured, activate the relevant workflows inside n8n.
+
+The system will then begin processing incoming events according to the selected workflow.
+
+#### Step 5 — View the Dashboard
+
+You can view the dashboard in either of two ways:
+
+- Open the deployed version at `https://expense-tracker-demo-data.netlify.app`
+- Open the local dashboard HTML file if you are running it locally
+
+Depending on your setup, you may use the included HTML dashboard file directly or deploy your own copy to Netlify.
+
+---
+
+## Architecture Overview
+
+The system follows a simple event-driven pipeline:
+
+User Event  
+├── Gmail Notification  
+└── Telegram Message  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼  
+n8n Workflow Automation  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼  
+Data Processing  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼  
+Google Sheets Database  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼  
+Web Dashboard
+
+---
+
+## Layered Architecture
+
+### Input Layer
+
+- Gmail Notification
+- Telegram Message
+
+### Processing Layer
+
+- n8n Workflow Engine
+- Event Detection
+- Data Extraction
+- Data Normalization
+- Validation
+
+### Storage Layer
+
+- Google Sheets Database
+
+### Presentation Layer
+
+- Web Dashboard
+- Netlify Deployment
+
+---
+
 ## Project Structure
 
-personal-finance-automation-demo/
-
-dashboard/  
-   index.html  
-
-workflows/  
-   expense-tracker.json  
-   telegram-bot.json  
-
-screenshots/  
-   dashboard.png  
-   workflow.png  
-
-README.md  
+    personal-finance-automation-demo/
+    ├── dashboard/
+    │   └── index.html
+    ├── workflows/
+    │   ├── expense-tracker-demo.json
+    │   └── telegram-expense-bot-demo.json
+    ├── screenshots/
+    │   ├── dashboard.png
+    │   └── workflow.png
+    ├── .env.example
+    ├── .gitignore
+    ├── LICENSE
+    └── README.md
 
 ---
 
@@ -221,6 +347,17 @@ This workflow demonstrates a practical implementation of event-driven automation
 
 ---
 
+## System Design Characteristics
+
+- Event-driven architecture
+- Local-first execution model
+- Stateless workflow processing
+- Lightweight storage layer
+- Serverless dashboard hosting
+- Free-tier infrastructure compatibility
+
+---
+
 ## Future Enhancements
 
 Planned improvements include:
@@ -241,8 +378,5 @@ MIT License
 ---
 
 ## Author
-
-Santiago Cuesta
-Author
 
 Santiago Cuesta
